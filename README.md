@@ -12,9 +12,9 @@ A base `simulacao_desmatamento_brasil.csv` é uma simulação criada para fins d
 
 ## Links
 
-- Repositório: https://github.com/SEU-USUARIO/projeto-desmatamento-brasil
-- Página do projeto: https://SEU-USUARIO.github.io/projeto-desmatamento-brasil/
-- Dashboard: https://SEU-APP.streamlit.app
+- Repositório: https://github.com/thalles-pitz/projeto-desmatamento-brasil
+- Página do projeto: https://thalles-pitz.github.io/projeto-desmatamento-brasil/
+- Dashboard: https://projeto-desmatamento-brasil.streamlit.app
 
 ## O que o projeto tem
 
