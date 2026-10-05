@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desmatamento e Preservação Ambiental no Brasil · Thalles Órion Volcov Pitz</title>
+<meta name="description" content="Projeto G1 de análise e visualização de dados com Python sobre desmatamento e preservação ambiental no Brasil.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌳%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --papel: #f3f6f0;
+  --tinta: #14261c;
+  --suave: #4c5f54;
+  --musgo: #1f4d3a;
+  --folha: #3f8f5f;
+  --brasa: #d9480f;
+  --cinza: #dde5d9;
+  --faixa: #e9efe5;
+  --fonte-titulo: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --fonte-texto: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+:root:not([data-tema="claro"]) {
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --papel: #0f1b15;
+    --tinta: #e8efe9;
+    --suave: #a3b4a9;
+    --musgo: #8fd0a9;
+    --folha: #5fb582;
+    --brasa: #ff8a5b;
+    --cinza: #243a2e;
+    --faixa: #152a1f;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fonte-texto);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+a { color: var(--musgo); }
+a:focus-visible, .botao:focus-visible { outline: 3px solid var(--brasa); outline-offset: 3px; }
+.miolo { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+h1, h2, h3 { font-family: var(--fonte-titulo); line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
+
+.topo { border-bottom: 1px solid var(--cinza); }
+.topo .miolo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1rem; flex-wrap: wrap; }
+.topo strong { font-family: var(--fonte-titulo); font-size: 1.05rem; }
+.topo nav { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 0.95rem; }
+.topo nav a { text-decoration: none; color: var(--suave); }
+.topo nav a:hover { color: var(--tinta); text-decoration: underline; }
+
+.abertura { padding-block: clamp(2.5rem, 7vw, 5.5rem); }
+.abertura .miolo { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(1.5rem, 5vw, 4rem); align-items: center; }
+.abertura h1 { font-size: clamp(2.4rem, 5.6vw, 4.4rem); font-weight: 800; }
+.abertura h1 span { display: block; color: var(--musgo); }
+.abertura p.lead { font-size: 1.2rem; color: var(--suave); max-width: 34rem; margin: 1.5rem 0; }
+.autor { font-weight: 600; margin: 0 0 1.75rem; }
+.autor small { display: block; font-weight: 400; color: var(--suave); }
+.botoes { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.botao {
+  display: inline-block; padding: 0.8rem 1.4rem; border-radius: 6px; font-weight: 600;
+  text-decoration: none; border: 2px solid var(--musgo);
+}
+.botao.cheio { background: var(--musgo); color: var(--papel); }
+.botao.cheio:hover { background: var(--tinta); border-color: var(--tinta); }
+.botao.vazado { color: var(--musgo); }
+.botao.vazado:hover { background: var(--faixa); }
+.destaque { margin: 0; border-left: 6px solid var(--brasa); padding-left: 1rem; }
+.destaque img { width: 100%; height: auto; display: block; border-radius: 4px; background: #fff; }
+.destaque figcaption { font-size: 0.9rem; color: var(--suave); margin-top: 0.6rem; }
+
+.numeros { background: var(--faixa); border-block: 1px solid var(--cinza); }
+.numeros .miolo { display: grid; grid-template-columns: repeat(5, 1fr); }
+.numeros div { padding: 1.5rem 1.25rem; border-right: 1px solid var(--cinza); }
+.numeros div:first-child { padding-left: 0; }
+.numeros div:last-child { border-right: 0; }
+.numeros b { display: block; font-family: var(--fonte-titulo); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; line-height: 1.1; }
+.numeros span { font-size: 0.9rem; color: var(--suave); }
+
+section.bloco { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+section.bloco h2 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); margin-bottom: 1.25rem; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); }
+.duas p { max-width: 38rem; margin-top: 0; }
+ol.perguntas { margin: 0; padding-left: 1.25rem; }
+ol.perguntas li { margin-bottom: 0.7rem; }
+.aviso { border-left: 4px solid var(--folha); background: var(--faixa); padding: 0.9rem 1.1rem; border-radius: 0 6px 6px 0; margin-top: 1.5rem; font-size: 0.98rem; }
+
+dl.colunas { display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1.5rem; margin: 0; }
+dl.colunas dt { font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; font-size: 0.92rem; color: var(--musgo); }
+dl.colunas dd { margin: 0; }
+
+.galeria { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5rem 2rem; }
+.galeria figure { margin: 0; }
+.galeria img { width: 100%; height: auto; display: block; border: 1px solid var(--cinza); border-radius: 4px; background: #fff; }
+.galeria figcaption { margin-top: 0.7rem; font-size: 0.97rem; color: var(--suave); }
+.galeria figcaption strong { color: var(--tinta); }
+.galeria .larga { grid-column: 1 / -1; }
+
+.tecnologias { display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0; margin: 0 0 1.5rem; list-style: none; }
+.tecnologias li { border: 1px solid var(--folha); border-radius: 999px; padding: 0.3rem 0.95rem; font-size: 0.95rem; }
+.recursos { columns: 2; column-gap: 3rem; padding-left: 1.2rem; margin: 0; }
+.recursos li { margin-bottom: 0.5rem; break-inside: avoid; }
+
+pre.arvore {
+  margin: 0; padding: 1.25rem 1.5rem; background: var(--faixa); border: 1px solid var(--cinza);
+  border-radius: 6px; overflow-x: auto; font-size: 0.92rem; line-height: 1.55;
+}
+
+.achados { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.1rem; }
+.achados li { padding-left: 1.1rem; border-left: 3px solid var(--folha); max-width: 52rem; }
+.achados li strong { font-family: var(--fonte-titulo); font-size: 1.08rem; }
+
+.links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.links a {
+  display: block; padding: 1.25rem; border: 2px solid var(--musgo); border-radius: 8px;
+  text-decoration: none; color: var(--tinta);
+}
+.links a:hover { background: var(--faixa); }
+.links a b { display: block; font-family: var(--fonte-titulo); font-size: 1.2rem; }
+.links a span { font-size: 0.93rem; color: var(--suave); }
+
+footer { border-top: 1px solid var(--cinza); padding-block: 2rem; color: var(--suave); font-size: 0.95rem; }
+
+@media (max-width: 860px) {
+  .abertura .miolo, .duas, .galeria, .links { grid-template-columns: 1fr; }
+  .numeros .miolo { grid-template-columns: repeat(2, 1fr); }
+  .numeros div { border-right: 0; border-bottom: 1px solid var(--cinza); padding-left: 0; }
+  .recursos { columns: 1; }
+  dl.colunas { grid-template-columns: 1fr; gap: 0.15rem; }
+  dl.colunas dd { margin-bottom: 0.7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="miolo">
+    <strong>Projeto G1 · Thalles Órion Volcov Pitz</strong>
+    <nav aria-label="Seções da página">
+      <a href="#sobre">Sobre</a>
+      <a href="#perguntas">Perguntas</a>
+      <a href="#indicadores">Indicadores</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#arquivos">Arquivos</a>
+      <a href="#dashboard">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="abertura">
+    <div class="miolo">
+      <div>
+        <h1>Dashboard de Desmatamento e Preservação Ambiental <span>no Brasil</span></h1>
+        <p class="lead">Projeto de análise e visualização de dados com Python, Pandas, Matplotlib, Seaborn, SQLAlchemy e Streamlit</p>
+        <p class="autor">Thalles Órion Volcov Pitz<small>Linguagem de Programação · Análise e Visualização de Dados com Python · Avaliação G1</small></p>
+        <div class="botoes">
+          <a class="botao cheio" href="https://projeto-desmatamento-brasil.streamlit.app/" target="_blank" rel="noopener">Acessar Dashboard Streamlit</a>
+          <a class="botao vazado" href="https://github.com/thalles-pitz/projeto-desmatamento-brasil" target="_blank" rel="noopener">Ver o código no GitHub</a>
+        </div>
+      </div>
+      <figure class="destaque">
+        <img src="imagens/01_desmatamento_anual.png" alt="Gráfico de linha com a área desmatada por ano, de 2015 a 2024, com pico em 2017">
+        <figcaption>Área desmatada por ano: pico em 2017 e menor valor em 2024.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="bloco" id="sobre">
+    <div class="miolo">
+      <h2>Sobre o projeto</h2>
+      <div class="duas">
+        <p>Este projeto apresenta uma análise do desmatamento e da preservação ambiental no Brasil, considerando área desmatada, área preservada, focos de queimada, clima, emissões de CO₂, unidades de conservação e nível de risco por estado, região e bioma.</p>
+        <p>A proposta é demonstrar um fluxo completo de projeto analítico: preparação dos dados, análise exploratória, criação de indicadores, visualizações, dashboard interativo e publicação em ambiente web.</p>
+      </div>
+      <p class="aviso"><strong>Sobre a base:</strong> o arquivo <code>simulacao_desmatamento_brasil.csv</code> tem 4.440 registros mensais de 20 estados, de 2015 a 2024. Ela é uma simulação criada para fins didáticos, então os resultados mostram o processo de análise e não medições oficiais.</p>
+    </div>
+  </section>
+
+  <section class="bloco" id="perguntas" style="background: var(--faixa);">
+    <div class="miolo">
+      <h2>Perguntas de análise</h2>
+      <ul class="achados">
+        <li>Qual é a área total desmatada entre 2015 e 2024?</li>
+        <li>O desmatamento aumentou ou diminuiu ao longo dos anos?</li>
+        <li>Quais regiões, estados e biomas têm as maiores médias de desmatamento?</li>
+        <li>Existe relação entre desmatamento, queimadas, chuva, temperatura e emissões de CO₂?</li>
+        <li>Como os registros se distribuem entre os níveis de risco ambiental?</li>
+        <li>Há variação temporal relevante nos focos de queimada?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bloco" id="indicadores">
+    <div class="miolo">
+      <h2>Indicadores analisados</h2>
+      <dl class="colunas">
+        <dt>Área desmatada</dt><dd>Soma da área desmatada, em km², no período e nos filtros escolhidos.</dd>
+        <dt>Área preservada</dt><dd>Média da área preservada por registro, em km².</dd>
+        <dt>Focos de queimada</dt><dd>Quantidade total de focos registrados.</dd>
+        <dt>Emissões de CO₂</dt><dd>Soma das emissões, em milhões.</dd>
+        <dt>Risco Alto ou Crítico</dt><dd>Percentual de registros nos dois níveis mais graves de risco.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="numeros" aria-label="Indicadores da base completa">
+    <div class="miolo">
+      <div><b>314.604 km²</b><span>área desmatada entre 2015 e 2024</span></div>
+      <div><b>40.459 km²</b><span>área preservada média por registro</span></div>
+      <div><b>67.037</b><span>focos de queimada registrados</span></div>
+      <div><b>203 mi</b><span>emissões de CO₂ somadas</span></div>
+      <div><b>49,8%</b><span>dos registros em risco Alto ou Crítico</span></div>
+    </div>
+  </section>
+
+  <section class="bloco" id="resultados">
+    <div class="miolo">
+      <h2>Principais resultados</h2>
+      <div class="galeria">
+        <figure>
+          <img src="imagens/02_desmatamento_regiao.png" alt="Barras com a média de desmatamento por região" loading="lazy">
+          <figcaption><strong>Regiões parecidas.</strong> Na média por registro, todas ficam entre 69,8 e 72,1 km². O Sudeste lidera em total só porque tem mais registros.</figcaption>
+        </figure>
+        <figure>
+          <img src="imagens/03_media_por_estado.png" alt="Barras horizontais com a média de desmatamento por estado" loading="lazy">
+          <figcaption><strong>A Bahia se destaca.</strong> Com 81,3 km² por registro, fica cerca de 15% acima da média geral, seguida pelo Amazonas (75,9 km²).</figcaption>
+        </figure>
+        <figure>
+          <img src="imagens/05_nivel_risco.png" alt="Barras com a quantidade de registros por nível de risco" loading="lazy">
+          <figcaption><strong>Risco equilibrado.</strong> Cada nível tem cerca de 25% dos registros.</figcaption>
+        </figure>
+        <figure>
+          <img src="imagens/08_correlacao.png" alt="Matriz de correlação entre as variáveis numéricas" loading="lazy">
+          <figcaption><strong>Correlações quase nulas.</strong> A maior ligação com o desmatamento é de 0,03, com as emissões de CO₂. Nenhuma variável explica sozinha o problema.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco" id="tecnologias" style="background: var(--faixa);">
+    <div class="miolo">
+      <h2>Tecnologias utilizadas</h2>
+      <ul class="tecnologias">
+        <li>Python</li>
+        <li>Pandas</li>
+        <li>Matplotlib</li>
+        <li>Seaborn</li>
+        <li>Streamlit</li>
+        <li>Plotly</li>
+        <li>SQLAlchemy</li>
+        <li>SQLite</li>
+        <li>GitHub Pages</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bloco" id="arquivos">
+    <div class="miolo">
+      <h2>Arquivos do projeto</h2>
+      <p style="max-width: 44rem; margin-top: 0;">Acesse os principais componentes do projeto:</p>
+      <div class="botoes">
+        <a class="botao vazado" href="README.md">Ver README</a>
+        <a class="botao vazado" href="notebooks/analise_desmatamento.ipynb">Ver Notebook</a>
+        <a class="botao vazado" href="dados/simulacao_desmatamento_brasil.csv">Baixar Base de Dados</a>
+        <a class="botao vazado" href="https://github.com/SEU-USUARIO/projeto-desmatamento-brasil" target="_blank" rel="noopener">Repositório no GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco" id="dashboard" style="background: var(--faixa);">
+    <div class="miolo">
+      <h2>Dashboard interativo</h2>
+      <p style="max-width: 44rem; margin-top: 0;">O dashboard principal foi desenvolvido com Streamlit e permite explorar os dados por meio de filtros por período, região, bioma e nível de risco, KPIs dinâmicos, gráficos, mapa interativo e tabelas.</p>
+      <div class="botoes">
+        <a class="botao cheio" href="https://SEU-APP.streamlit.app" target="_blank" rel="noopener">Acessar Dashboard Streamlit</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco" id="objetivo">
+    <div class="miolo">
+      <h2>Objetivo pedagógico</h2>
+      <p style="max-width: 44rem; margin-top: 0;">Este projeto foi desenvolvido para a avaliação G1 da disciplina, mostrando como transformar uma base de dados em um produto analítico completo, organizado e publicável.</p>
+      <p style="max-width: 44rem;">Mais importante do que criar gráficos é responder perguntas relevantes e apoiar a tomada de decisão.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="miolo">
+    Projeto desenvolvido por <strong>Thalles Órion Volcov Pitz</strong> para fins educacionais — Análise e Visualização de Dados com Python.
+  </div>
+</footer>
+
+</body>
+</html>
